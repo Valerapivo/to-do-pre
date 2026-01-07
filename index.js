@@ -1,86 +1,92 @@
-let tasksList = [
-    "Выполнить проектную работу",
-    "Полить растения",
-    "Изучить руководство по React",
-    "Разработать интерфейс для проекта",
-    "Прогуляться в солнечную погоду",
+let items = [
+    "Сделать проектную работу",
+    "Полить цветы",
+    "Пройти туториал по Реакту",
+    "Сделать фронт для своего проекта",
+    "Прогуляться по улице в солнечный день",
     "Помыть посуду",
 ];
 
-const listContainer = document.querySelector(".to-do__list");
-const form = document.querySelector(".to-do__form");
-const inputField = document.querySelector(".to-do__input");
+const listElement = document.querySelector(".to-do__list");
+const formElement = document.querySelector(".to-do__form");
+const inputElement = document.querySelector(".to-do__input");
 
-function loadSavedTasks() {
-    const storedTasks = JSON.parse(localStorage.getItem("tasks"));
-    return storedTasks ? storedTasks : tasksList;
+function loadTasks() {
+    const savedTasks = JSON.parse(localStorage.getItem("tasks"));
+    return savedTasks ? savedTasks : items;
 }
 
-function createTaskElement(taskText) {
+function createItem(taskText) {
     const template = document.getElementById("to-do__item-template");
-    const taskElement = template.content
-        .querySelector(".to-do__item")
-        .cloneNode(true);
+    const taskElement = template.content.querySelector(".to-do__item").cloneNode(true);
 
-    const textSpan = taskElement.querySelector(".to-do__item-text");
-    textSpan.textContent = taskText;
+    const textElement = taskElement.querySelector(".to-do__item-text");
+    textElement.textContent = taskText;
 
-    const deleteBtn = taskElement.querySelector(".to-do__item-button_type_delete");
-    deleteBtn.addEventListener("click", () => {
+    const deleteButton = taskElement.querySelector(".to-do__item-button_type_delete");
+    deleteButton.addEventListener("click", function() {
         taskElement.remove();
-        const currentTasks = collectTasksFromPage();
-        storeTasks(currentTasks);
+        const currentItems = getTasksFromDOM();
+        saveTasks(currentItems);
     });
 
-    const copyBtn = taskElement.querySelector(".to-do__item-button_type_duplicate");
-    copyBtn.addEventListener("click", () => {
-        const copiedText = textSpan.textContent;
-        const duplicatedTask = createTaskElement(copiedText);
-        listContainer.prepend(duplicatedTask);
-        const updatedTasks = collectTasksFromPage();
-        storeTasks(updatedTasks);
+    const duplicateButton = taskElement.querySelector(".to-do__item-button_type_duplicate");
+    duplicateButton.addEventListener("click", function() {
+        const itemName = textElement.textContent;
+        const newItem = createItem(itemName);
+        listElement.prepend(newItem);
+        const currentItems = getTasksFromDOM();
+        saveTasks(currentItems);
     });
 
-    const editBtn = taskElement.querySelector(".to-do__item-button_type_edit");
-    editBtn.addEventListener("click", () => {
-        textSpan.setAttribute("contenteditable", true);
-        textSpan.focus();
+    const editButton = taskElement.querySelector(".to-do__item-button_type_edit");
+    editButton.addEventListener("click", function() {
+        textElement.setAttribute("contenteditable", "true");
+        textElement.focus();
     });
 
-    textSpan.addEventListener("blur", () => {
-        textSpan.setAttribute("contenteditable", false);
-        const editedTasks = collectTasksFromPage();
-        storeTasks(editedTasks);
+    textElement.addEventListener("blur", function() {
+        textElement.setAttribute("contenteditable", "false");
+        const currentItems = getTasksFromDOM();
+        saveTasks(currentItems);
     });
 
     return taskElement;
 }
 
-form.addEventListener("submit", (event) => {
+formElement.addEventListener("submit", function(event) {
     event.preventDefault();
-    const newTaskText = inputField.value.trim();
-    if (newTaskText) {
-        const newTaskElement = createTaskElement(newTaskText);
-        listContainer.prepend(newTaskElement);
-        const updatedTasks = collectTasksFromPage();
-        storeTasks(updatedTasks);
-        inputField.value = "";
+    const taskText = inputElement.value.trim();
+    
+    if (taskText) {
+        const newTask = createItem(taskText);
+        listElement.prepend(newTask);
+        const currentItems = getTasksFromDOM();
+        saveTasks(currentItems);
+        inputElement.value = "";
     }
 });
 
-tasksList = loadSavedTasks();
-
-tasksList.forEach((task) => {
-    const taskElement = createTaskElement(task);
-    listContainer.append(taskElement);
-});
-
-function collectTasksFromPage() {
+function getTasksFromDOM() {
     const taskElements = document.querySelectorAll(".to-do__item-text");
-    const currentTasks = Array.from(taskElements).map(task => task.textContent);
-    return currentTasks;
+    const tasks = [];
+    
+    taskElements.forEach(function(taskElement) {
+        tasks.push(taskElement.textContent);
+    });
+    
+    return tasks;
 }
 
-function storeTasks(tasksArray) {
+function saveTasks(tasksArray) {
     localStorage.setItem("tasks", JSON.stringify(tasksArray));
 }
+
+
+//init
+items = loadTasks();
+
+items.forEach(function(task) {
+    const taskElement = createItem(task);
+    listElement.append(taskElement);
+});
