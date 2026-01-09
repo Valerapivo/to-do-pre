@@ -16,10 +16,10 @@ function loadTasks() {
     return savedTasks ? savedTasks : items;
 }
 
-function createItem(taskText) {
+function manageItem(taskText) {
+
     const template = document.getElementById("to-do__item-template");
     const taskElement = template.content.querySelector(".to-do__item").cloneNode(true);
-
     const textElement = taskElement.querySelector(".to-do__item-text");
     textElement.textContent = taskText;
 
@@ -33,33 +33,43 @@ function createItem(taskText) {
     const duplicateButton = taskElement.querySelector(".to-do__item-button_type_duplicate");
     duplicateButton.addEventListener("click", function() {
         const itemName = textElement.textContent;
-        const newItem = createItem(itemName);
-        listElement.prepend(newItem);
-        const currentItems = getTasksFromDOM();
-        saveTasks(currentItems);
+	if (textElement.textContent && textElement.textContent.trim().length > 0) {
+        	const newItem = manageItem(itemName);
+        	listElement.prepend(newItem);
+        	const currentItems = getTasksFromDOM();
+        	saveTasks(currentItems);
+	}
     });
 
+    let editedText = textElement.textContent;
     const editButton = taskElement.querySelector(".to-do__item-button_type_edit");
     editButton.addEventListener("click", function() {
         textElement.setAttribute("contenteditable", "true");
         textElement.focus();
+	editedText = textElement.textContent;
     });
 
     textElement.addEventListener("blur", function() {
         textElement.setAttribute("contenteditable", "false");
-        const currentItems = getTasksFromDOM();
-        saveTasks(currentItems);
+	if (textElement.textContent && textElement.textContent.trim().length > 0) {
+        	const currentItems = getTasksFromDOM();
+		const currentElement = textElement.textContent;
+		saveTasks(currentItems);
+	}
+	else {
+		textElement.textContent = editedText;
+	}
     });
-
     return taskElement;
 }
+
 
 formElement.addEventListener("submit", function(event) {
     event.preventDefault();
     const taskText = inputElement.value.trim();
     
-    if (taskText) {
-        const newTask = createItem(taskText);
+    if (taskText && taskText.trim().length > 0) {
+        const newTask = manageItem(taskText);
         listElement.prepend(newTask);
         const currentItems = getTasksFromDOM();
         saveTasks(currentItems);
@@ -72,7 +82,7 @@ function getTasksFromDOM() {
     const tasks = [];
     
     taskElements.forEach(function(taskElement) {
-        tasks.push(taskElement.textContent);
+	tasks.push(taskElement.textContent);
     });
     
     return tasks;
@@ -87,6 +97,6 @@ function saveTasks(tasksArray) {
 items = loadTasks();
 
 items.forEach(function(task) {
-    const taskElement = createItem(task);
+    const taskElement = manageItem(task);
     listElement.append(taskElement);
 });
